@@ -1,6 +1,10 @@
 # pylint: disable=import-outside-toplevel
 # pylint: disable=line-too-long
 # flake8: noqa
+
+import os
+import zipfile
+import pandas as pd
 """
 Escriba el codigo que ejecute la accion solicitada en cada pregunta.
 """
@@ -71,3 +75,34 @@ def pregunta_01():
 
 
     """
+
+    # Descomprimir el archivo zip
+    if os.path.exists('files/input.zip'):
+        with zipfile.ZipFile('files/input.zip', 'r') as zip_ref:
+            zip_ref.extractall('.')
+
+    # Crear el directorio de salida si no existe
+    if not os.path.exists('files/output'):
+        os.makedirs('files/output')
+
+    # Procesar los directorios train y test
+    for dataset_type in ['train', 'test']:
+        data = []
+        data_path = os.path.join('input', dataset_type)
+        for sentiment in ['positive', 'negative', 'neutral']:
+            sentiment_path = os.path.join(data_path, sentiment)
+            if os.path.exists(sentiment_path):
+                for filename in os.listdir(sentiment_path):
+                    if filename.endswith(".txt"):
+                        with open(os.path.join(sentiment_path, filename), 'r', encoding='utf-8') as f:
+                            phrase = f.read().strip()
+                            data.append({'phrase': phrase, 'target': sentiment})
+        
+        # Crear DataFrame y guardarlo como CSV
+        df = pd.DataFrame(data)
+        output_filename = os.path.join('files/output', f'{dataset_type}_dataset.csv')
+        df.to_csv(output_filename, index=False)
+
+# --- Bloque para ejecución y prueba ---
+# Se llama a la función.
+# pregunta_01()
